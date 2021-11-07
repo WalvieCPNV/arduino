@@ -19,7 +19,6 @@ void loop()
     if (digitalRead(A4) == LOW)
     {
         digitalWrite(4, HIGH);
-        midi();
     }
     else
     {
