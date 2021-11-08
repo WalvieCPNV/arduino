@@ -26,6 +26,9 @@ void setup()
     randomSeed(analogRead(0));
 
     Serial.begin(9600);
+
+    startupMusic();
+    winningMusic();
 }
 
 void generateLed()
@@ -120,7 +123,6 @@ void playerInput(int playerInputCount)
 
 void playGame()
 {
-    midi();
     do
     {
         generateLed();
