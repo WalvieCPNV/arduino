@@ -1,4 +1,16 @@
-#include "music.h"
+/*
+Author: Arthur Bottemanne
+Description: Make an arduino program that plays simon says
+Version: 09.11.21
+*/
+
+#include "jingle.h"
+
+#define BLUE_LED  165
+#define YELLOW_LED  131
+#define RED_LED  110
+#define GREEN_LED  82
+#define INCORRECT  33
 
 int gameInSession = 0;
 
@@ -26,9 +38,15 @@ void setup()
     randomSeed(analogRead(0));
 
     Serial.begin(9600);
+}
 
-    startupMusic();
-    winningMusic();
+void initialiseVariables()
+{
+    gameInSession = 0;
+
+    Sequence[31] = {0};
+
+    freeSpace = 0;
 }
 
 void generateLed()
@@ -49,23 +67,23 @@ void showLed()
     }
 }
 
-void verifyInput(int number, int playerInputCount)
+void verifyInput(int number, int playerInputCount, int buzzerFrequency)
 {
     if (number == Sequence[playerInputCount])
     {
+        tone(tonePin, buzzerFrequency);
         Serial.println("Correct!");
     }
     else
     {
         Serial.println("Incorrect!");
+        gameInSession = 0;
     }
 }
 
 void playerInput(int playerInputCount)
 {
-    Serial.println("waiting for player input");
-
-    while (blueButton == HIGH && yellowButton == HIGH && redButton == HIGH && greenButton == HIGH)
+    do    
     {
         delay(33.3);
 
@@ -74,7 +92,8 @@ void playerInput(int playerInputCount)
         redButton = digitalRead(A4);
         greenButton = digitalRead(A5);
     }
-    
+    while (blueButton == HIGH && yellowButton == HIGH && redButton == HIGH && greenButton == HIGH);
+
     for (int i = 2; i < 6; i++)
     {
         switch (i)
@@ -82,26 +101,26 @@ void playerInput(int playerInputCount)
         case 2:
             if (digitalRead(A2) == LOW)
             {
-                verifyInput(i, playerInputCount);
+                verifyInput(i, playerInputCount, BLUE_LED);
             }  
             break;
         
         case 3:
             if (digitalRead(A3) == LOW)
             {
-                verifyInput(i, playerInputCount);
+                verifyInput(i, playerInputCount, YELLOW_LED);
             }  
             break;
         case 4:
             if (digitalRead(A4) == LOW)
             {
-                verifyInput(i, playerInputCount);
+                verifyInput(i, playerInputCount, RED_LED);
             }  
             break;
         case 5:
             if (digitalRead(A5) == LOW)
             {
-                verifyInput(i, playerInputCount);
+                verifyInput(i, playerInputCount, GREEN_LED);
             }  
             break;
 
@@ -110,7 +129,7 @@ void playerInput(int playerInputCount)
         }
     }
     
-    while (blueButton != HIGH || yellowButton != HIGH || redButton != HIGH || greenButton != HIGH)
+    do
     {
         delay(33.3);
 
@@ -119,23 +138,29 @@ void playerInput(int playerInputCount)
         redButton = digitalRead(A4);
         greenButton = digitalRead(A5);
     }
+    while (blueButton != HIGH || yellowButton != HIGH || redButton != HIGH || greenButton != HIGH);
+
+    noTone(tonePin);
 }
 
 void playGame()
 {
+    winningMusic();
+    delay(650);
     do
     {
         generateLed();
         showLed();
         for (int playerInputCount = 0; playerInputCount < freeSpace; playerInputCount++)
         {
-            Serial.println(playerInputCount);
+            Serial.println(playerInputCount + 1);
             playerInput(playerInputCount);
         }
         delay(200);
-        Serial.println("restarting game");
     }
-    while (gameInSession = 1);    
+    while (gameInSession = 1 && freeSpace < 3);
+
+    winningMusic();
 }
 
 void loop()
@@ -144,9 +169,7 @@ void loop()
 
     if (blueButton == LOW)
     {
-        digitalWrite(3, HIGH);
-        delay(200);
-        digitalWrite(3, LOW);
+        initialiseVariables();
         gameInSession = 1;
         while (blueButton == LOW)
         {
