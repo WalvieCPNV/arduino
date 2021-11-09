@@ -18,6 +18,12 @@ int freeSpace = 0;
 
 int speedMultiplyer = 1;
 
+int sequenceLength = 0;
+
+int playerInputCount = 0;
+
+int playerInputCountMode2 = 0;
+
 int blueButton = digitalRead(A2);
 int yellowButton = digitalRead(A3);
 int redButton = digitalRead(A4);
@@ -45,6 +51,15 @@ void resetGame()
     Sequence[31] = {0};
     freeSpace = 0;
     speedMultiplyer = 1;
+    sequenceLength = 0;
+    playerInputCount = 0;
+    playerInputCountMode2 = 0;
+    delay(200);
+    noTone(tonePin);
+    for (int i = 2; i < 6; i++)
+    {
+        digitalWrite(i, LOW);
+    }
 }
 
 void generateLed()
@@ -58,7 +73,7 @@ void checkSpeedIncrease()
 {
     if (freeSpace % 3 == 0)
     {
-        speedMultiplyer += 0.1;
+        speedMultiplyer += 0.2;
     }
     
 }
@@ -74,7 +89,7 @@ void showLed()
     }
 }
 
-void verifyInput(int number, int playerInputCount, int buzzerFrequency)
+void verifyInput(int number, int buzzerFrequency)
 {
     if (number == Sequence[playerInputCount])
     {
@@ -86,28 +101,50 @@ void verifyInput(int number, int playerInputCount, int buzzerFrequency)
         tone(tonePin, INCORRECT);
         Serial.println("Incorrect!");
         resetGame();
-        delay(200);
-        noTone(tonePin);
+        startupMusic();
     }
 }
 
-void verifySequence(int number, int playerInputCount, int buzzerFrequency)
+void checkMode(int counterVariable, int mode, int frequency)
 {
-    if (number == Sequence[playerInputCount])
+    if (mode == 1)
     {
+        verifyInput(counterVariable, frequency);
+    }
+    else
+    {
+        verifySequence(counterVariable, frequency);
+    }
+}
+
+void verifySequence(int number, int buzzerFrequency)
+{
+    if (playerInputCountMode2 == sequenceLength)
+    {
+        Sequence[sequenceLength] = number;
+        sequenceLength += 1;
+        digitalWrite(number, HIGH);
+        tone(tonePin, buzzerFrequency);
+        playerInputCountMode2 = -1;
+    }
+    else if (number == Sequence[playerInputCountMode2])
+    {
+        tone(tonePin, buzzerFrequency);
         Serial.println("Correct!");
+        digitalWrite(number, HIGH);
     }
     else
     {
         tone(tonePin, INCORRECT);
         Serial.println("Incorrect!");
+        digitalWrite(number, HIGH);
         resetGame();
-        delay(200);
-        noTone(tonePin);
+        delay(1000);
+        startupMusic();
     }
 }
 
-void playerInput(int playerInputCount, int mode)
+void playerInput(int mode)
 {
     do    
     {
@@ -127,33 +164,26 @@ void playerInput(int playerInputCount, int mode)
         case 2:
             if (digitalRead(A2) == LOW)
             {
-                    if (mode == 1)
-                    {
-                        verifyInput(i, playerInputCount, BLUE_LED);
-                    }
-                    else
-                    {
-                        verifySequence(i, playerInputCount, BLUE_LED);
-                    }
+                checkMode(i, mode, BLUE_LED);
             } 
             break;
         
         case 3:
             if (digitalRead(A3) == LOW)
             {
-                verifyInput(i, playerInputCount, YELLOW_LED);
+                checkMode(i, mode, YELLOW_LED);
             }  
             break;
         case 4:
             if (digitalRead(A4) == LOW)
             {
-                verifyInput(i, playerInputCount, RED_LED);
+                checkMode(i, mode, RED_LED);
             }
             break;
         case 5:
             if (digitalRead(A5) == LOW)
             {
-                verifyInput(i, playerInputCount, GREEN_LED);
+                checkMode(i, mode, GREEN_LED);
             }  
             break;
 
@@ -174,23 +204,33 @@ void playerInput(int playerInputCount, int mode)
     while (blueButton != HIGH || yellowButton != HIGH || redButton != HIGH || greenButton != HIGH);
 
     noTone(tonePin);
+    
+    for (int i = 2; i < 6; i++)
+    {
+        digitalWrite(i, LOW);
+    }
 }
 
 void secondGameMode()
 {
     startupMusic();
     delay(650);
+
     do
     {
-        for (int playerInputCount = 0; playerInputCount < freeSpace; playerInputCount++)
+        Serial.print("inputCounter: ");
+        Serial.println(playerInputCountMode2);
+        Serial.print("sequenceLength: ");
+        Serial.println(sequenceLength);
+        playerInput(2);
+        if (sequenceLength != 0)
         {
-            Serial.println(playerInputCount + 1);
-            playerInput(playerInputCount, 2);
+            playerInputCountMode2 += 1;
         }
         delay(200);
     }
-    while (freeSpace < 31);
-
+    while (sequenceLength < 5);
+    resetGame();
     winningMusic();
 }
 
@@ -202,16 +242,16 @@ void firstGameMode()
     {
         generateLed();
         showLed();
-        for (int playerInputCount = 0; playerInputCount < freeSpace; playerInputCount++)
+        for (playerInputCount = 0; playerInputCount < freeSpace; playerInputCount++)
         {
             Serial.println(playerInputCount + 1);
-            playerInput(playerInputCount, 1);
+            playerInput(1);
         }
         delay(200/speedMultiplyer);
         checkSpeedIncrease();
     }
     while (freeSpace < 3);
-
+    resetGame();
     winningMusic();
 }
 
@@ -222,7 +262,7 @@ void loop()
 
     if (blueButton == LOW)
     {
-        resetGame();
+        //resetGame(0);
         while (blueButton == LOW)
         {
             delay(33.3);
@@ -233,7 +273,7 @@ void loop()
 
     if (yellowButton == LOW)
     {
-        resetGame();
+        //resetGame(0);
         while (yellowButton == LOW)
         {
             delay(33.3);
