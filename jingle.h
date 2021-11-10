@@ -1,41 +1,61 @@
+//Initialises the variables needed for the jingles
 int tonePin = 6;
-int ledOn;
+int previousLED;
 
+//turns off the previous LED that was turned on and turns on a random LED
 void ledJingle()
 {
-    digitalWrite(ledOn, LOW);
-    int randomLed = random(2, 6);
-
-    if (randomLed == ledOn)
+    //turns off the previousLED
+    digitalWrite(previousLED, LOW);
+    //chooses a random LED to turn on
+    int randomLED = random(2, 6);
+    //if the randomLED was the same as the previousLED, it will either subtract or add one to the number changing which LED will be turned on
+    if (randomLED == previousLED)
     {
-        if (randomLed == 5)
+        if (randomLED == 5)
         {
-            randomLed -= 1;
+            randomLED -= 1;
         }
         else
         {
-            randomLed += 1;
+            randomLED += 1;
         }
     }
 
-    ledOn = randomLed;
-    digitalWrite(ledOn, HIGH);
+    //assigns the random LED chosen to the previous LED variable
+    previousLED = randomLED;
+    //turns on the LED chosen at random
+    digitalWrite(previousLED, HIGH);
 }
 
+//turns on all the LED's at once and turns them off after a delay
 void allLedOn(int delayTime)
 {
+    //loops through all the LED's and turns them on
     for (int i = 2; i < 6; i++)
     {
         digitalWrite(i, HIGH);
     }
+    //waits the same ammount of time that the last note lasts for
     delay(delayTime);
+    //loops through all the LED's and turns them off
     for (int i = 2; i < 6; i++)
     {
         digitalWrite(i, LOW);
     }
 }
 
-void startupMusic() {
+// Midi files made by: Arthur Bottemanne
+// Credit:
+// Midi to Arduino Converter
+//     - Andy Tran (extramaster), 2015
+// https://www.extramaster.net/tools/midiToArduino/
+
+//plays a jingle made for when a game is launched
+//turns on a random LED with every note that is played
+//music: crossing field by LiSa
+void startupMusic() 
+{
     tone(tonePin, 349, 167.598);
     ledJingle();
     delay(167.598);
@@ -85,124 +105,11 @@ void startupMusic() {
     allLedOn(1005.59);
 }
 
-void silhouette()
+//plays a jingle made for when a game is won
+//turns on a random LED with every note that is played
+//music: FREEDOM DiVE↓ by XI
+void winningMusic() 
 {
-    tone(tonePin, 246, 164.835);
-    delay(164.835);
-    tone(tonePin, 220, 164.835);
-    delay(164.835);
-    tone(tonePin, 246, 164.835);
-    delay(164.835);
-    tone(tonePin, 293, 329.67);
-    delay(329.67);
-    tone(tonePin, 220, 164.835);
-    delay(164.835);
-    tone(tonePin, 246, 164.835);
-    delay(164.835);
-    tone(tonePin, 220, 164.835);
-    delay(164.835);
-    tone(tonePin, 246, 164.835);
-    delay(164.835);
-    tone(tonePin, 293, 164.835);
-    delay(164.835);
-    tone(tonePin, 246, 164.835);
-    delay(164.835);
-    tone(tonePin, 220, 164.835);
-    delay(164.835);
-    tone(tonePin, 246, 329.67);
-    delay(329.67);
-}
-
-void Temp() {
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 293, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 440, 797.447727273);
-    delay(797.447727273);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 293, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 523, 318.979090909);
-    delay(318.979090909);
-    tone(tonePin, 493, 318.979090909);
-    delay(318.979090909);
-    tone(tonePin, 440, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 293, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 440, 797.447727273);
-    delay(797.447727273);
-    tone(tonePin, 349, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 261, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 349, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 466, 318.979090909);
-    delay(318.979090909);
-    tone(tonePin, 440, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 293, 79.7447727273);
-    delay(79.7447727273);
-    tone(tonePin, 329, 79.7447727273);
-    delay(79.7447727273);
-    tone(tonePin, 349, 79.7447727273);
-    delay(79.7447727273);
-    tone(tonePin, 369, 79.7447727273);
-    delay(79.7447727273);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 293, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 440, 797.447727273);
-    delay(797.447727273);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 293, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 523, 318.979090909);
-    delay(318.979090909);
-    tone(tonePin, 493, 318.979090909);
-    delay(318.979090909);
-    tone(tonePin, 440, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 293, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 391, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 440, 637.958181818);
-    delay(637.958181818);
-    tone(tonePin, 349, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 261, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 349, 159.489545455);
-    delay(159.489545455);
-    tone(tonePin, 466, 318.979090909);
-    delay(318.979090909);
-    tone(tonePin, 440, 318.979090909);
-    delay(318.979090909);
-    tone(tonePin, 349, 318.979090909);
-    delay(318.979090909);
-}
-
-void winningMusic() {
     tone(tonePin, 1174, 69);
     ledJingle();
     delay(69);
