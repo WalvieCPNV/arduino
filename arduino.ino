@@ -1,7 +1,7 @@
 /*
 Author: Arthur Bottemanne
 Description: Make an arduino program that plays simon says
-Version: 09.11.21
+Version: 10.11.21
 */
 
 #include "jingle.h"
@@ -54,7 +54,6 @@ void resetGame()
     sequenceLength = 0;
     playerInputCount = 0;
     playerInputCountMode2 = 0;
-    delay(200);
     noTone(tonePin);
     for (int i = 2; i < 6; i++)
     {
@@ -100,7 +99,9 @@ void verifyInput(int number, int buzzerFrequency)
     {
         tone(tonePin, INCORRECT);
         Serial.println("Incorrect!");
+        delay(300);
         resetGame();
+        delay(300);
         startupMusic();
     }
 }
@@ -123,7 +124,6 @@ void verifySequence(int number, int buzzerFrequency)
     {
         Sequence[sequenceLength] = number;
         sequenceLength += 1;
-        digitalWrite(number, HIGH);
         tone(tonePin, buzzerFrequency);
         playerInputCountMode2 = -1;
     }
@@ -131,13 +131,11 @@ void verifySequence(int number, int buzzerFrequency)
     {
         tone(tonePin, buzzerFrequency);
         Serial.println("Correct!");
-        digitalWrite(number, HIGH);
     }
     else
     {
         tone(tonePin, INCORRECT);
         Serial.println("Incorrect!");
-        digitalWrite(number, HIGH);
         resetGame();
         delay(1000);
         startupMusic();
@@ -164,6 +162,7 @@ void playerInput(int mode)
         case 2:
             if (digitalRead(A2) == LOW)
             {
+                digitalWrite(2, HIGH);
                 checkMode(i, mode, BLUE_LED);
             } 
             break;
@@ -171,18 +170,21 @@ void playerInput(int mode)
         case 3:
             if (digitalRead(A3) == LOW)
             {
+                digitalWrite(3, HIGH);
                 checkMode(i, mode, YELLOW_LED);
             }  
             break;
         case 4:
             if (digitalRead(A4) == LOW)
             {
+                digitalWrite(4, HIGH);
                 checkMode(i, mode, RED_LED);
             }
             break;
         case 5:
             if (digitalRead(A5) == LOW)
             {
+                digitalWrite(5, HIGH);
                 checkMode(i, mode, GREEN_LED);
             }  
             break;
@@ -262,7 +264,7 @@ void loop()
 
     if (blueButton == LOW)
     {
-        //resetGame(0);
+        resetGame();
         while (blueButton == LOW)
         {
             delay(33.3);
@@ -273,7 +275,7 @@ void loop()
 
     if (yellowButton == LOW)
     {
-        //resetGame(0);
+        resetGame();
         while (yellowButton == LOW)
         {
             delay(33.3);
