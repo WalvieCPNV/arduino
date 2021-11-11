@@ -51,7 +51,9 @@ void allLedOn(int delayTime)
 //     - Andy Tran (extramaster), 2015
 // https://www.extramaster.net/tools/midiToArduino/
 
-//plays a jingle made for when a game is launched
+
+
+//plays this jingle when a game is launched
 //turns on a random LED with every note that is played
 //music: crossing field by LiSa
 void startupMusic() 
@@ -105,7 +107,7 @@ void startupMusic()
     allLedOn(1005.59);
 }
 
-//plays a jingle made for when a game is won
+//plays this jingle when a game is won
 //turns on a random LED with every note that is played
 //music: FREEDOM DiVE↓ by XI
 void winningMusic() 

@@ -1,25 +1,32 @@
 /*
 Author: Arthur Bottemanne
-Description: Make an arduino program that plays simon says
-Version: 10.11.21
+Description: reproduces the simon says board game on an arduino
+Date: 11.11.21
+Version: v1.1
 */
 
 #include "jingle.h"
 
 //Defines the different frequencies played when a button is played
-#define BLUE_LED  165
-#define YELLOW_LED  131
-#define RED_LED  110
-#define GREEN_LED  82
-#define INCORRECT  33
+#define CORRECT 523.25
+#define BLUE_LED 165
+#define YELLOW_LED 131
+#define RED_LED 110
+#define GREEN_LED 82
+#define INCORRECT 33
 
 //Initialises the variables needed for the programs process
+
+//used for storing the sequence of LED's in the current game
 int Sequence[31] = {0};
+//indicates at what index of the sequence array is free for the program to insert a value into
 int freeSpace = 0;
+//will increase everytime sequence is dividable by 3, makes the first game modes delay take less time
 int speedMultiplyer = 1;
-int sequenceLength = 0;
+//counts the ammount of inputs for the current sequence
 int playerInputCount = 0;
-int playerInputCountMode2 = 0;
+//checks if the second game mode is won
+int winConditionMode2;
 
 //initialises the buttons state
 int blueButton = digitalRead(A2);
@@ -42,8 +49,28 @@ void setup()
     //initialises a pseudo-random number generator
     randomSeed(analogRead(0));
 
-    //initialises the bitrate for serial functions
+    //initialises the baud rate for serial functions
     Serial.begin(9600);
+}
+
+//checks if the game is in the second game mode and plays a sound if the input was correct
+void verifyCorrectNote(int gameMode)
+{
+    //will play the "CORRECT" sound for a short time after a short delay id the game mode is the second
+    //checks also for freeSpace if it isn't 0 to know if its the start of the game or not
+    if (gameMode == 2 && freeSpace != 0)
+    {
+        //if the game is at the state of adding an LED, it will simply not play the sound
+        if (playerInputCount == -1)
+        {
+            return;
+        }
+        delay(300);
+        Serial.println("Correct sound effect playing");
+        tone(tonePin, CORRECT, 350);
+        delay(350);
+    }
+    
 }
 
 //resets the pins state to 0
@@ -63,9 +90,9 @@ void resetGame()
     Sequence[31] = {0};
     freeSpace = 0;
     speedMultiplyer = 1;
-    sequenceLength = 0;
     playerInputCount = 0;
-    playerInputCountMode2 = 0;
+    playerInputCount = 0;
+    winConditionMode2 = 0;
     //resets the pins
     resetPinOutputState();
 }
@@ -83,7 +110,7 @@ void checkSpeedIncrease()
 {
     if (freeSpace % 3 == 0)
     {
-        speedMultiplyer += 0.2;
+        speedMultiplyer += 0.3;
     }
     
 }
@@ -97,6 +124,24 @@ void showLED()
         //turns on and off the LED in the sequence
         //the delay between every LED turning on and off gets shorter everytime speedMultiplyer is increased
         digitalWrite(Sequence[i], HIGH);
+        //will play the correct frequency for the current LED that is lit up
+        switch (Sequence[i])
+        {
+            case 2:
+                tone(tonePin, BLUE_LED, 300/speedMultiplyer);
+                break;
+            case 3:
+                tone(tonePin, YELLOW_LED, 300/speedMultiplyer);
+                break;
+            case 4:
+                tone(tonePin, RED_LED, 300/speedMultiplyer);
+                break;
+            case 5:
+                tone(tonePin, GREEN_LED, 300/speedMultiplyer);
+                break;
+            default:
+                break;
+        }
         delay(300/speedMultiplyer);
         digitalWrite(Sequence[i], LOW);
         delay(200/speedMultiplyer);
@@ -125,19 +170,24 @@ void inputIncorrect()
 void verifySequence(int LEDPinNumber, int buzzerFrequency)
 {
     //check if there isn't anything left in the sequence
-    if (playerInputCountMode2 == sequenceLength)
+    if (playerInputCount == freeSpace)
     {
         //will add the button pressed to the sequence
-        Sequence[sequenceLength] = LEDPinNumber;
-        sequenceLength += 1;
+        Sequence[freeSpace] = LEDPinNumber;
+        freeSpace++;
         tone(tonePin, buzzerFrequency);
         //assigns -1 to the variable due to the fact that it will immediatley add one to it
-        playerInputCountMode2 = -1;
+        playerInputCount = -1;
     }
     //check if the pressed button is the same as the LED in the current sequence
-    else if (LEDPinNumber == Sequence[playerInputCountMode2])
+    else if (LEDPinNumber == Sequence[playerInputCount])
     {
         inputCorrect(buzzerFrequency);
+        //checks if the player has inputted the full sequence when the game is finished
+        if (freeSpace == 31 && playerInputCount == freeSpace - 1)
+        {
+            winConditionMode2 = 1;
+        }
     }
     else
     {
@@ -174,11 +224,12 @@ void checkMode(int LEDPinNumber, int mode, int frequency)
 }
 
 //fetches the user button input
-void playerInput(int mode)
+void playerInput(int gameMode)
 {
     //waits for a button input to be registered
     do    
     {
+        delay(50);
         //reads continuously the input of all of the buttons
         blueButton = digitalRead(A2);
         yellowButton = digitalRead(A3);
@@ -199,7 +250,7 @@ void playerInput(int mode)
                 digitalWrite(2, HIGH);
                 //will change the verification method depending on which game mode it is
                 //passes through which LED has been pressed and what frequency the program is supposed to play
-                checkMode(i, mode, BLUE_LED);
+                checkMode(i, gameMode, BLUE_LED);
             } 
             break;
         //yellow button
@@ -209,7 +260,7 @@ void playerInput(int mode)
                 //will change the verification method depending on which game mode it is
                 //passes through which LED has been pressed and what frequency the program is supposed to play
                 digitalWrite(3, HIGH);
-                checkMode(i, mode, YELLOW_LED);
+                checkMode(i, gameMode, YELLOW_LED);
             }  
             break;
         //red button
@@ -219,7 +270,7 @@ void playerInput(int mode)
                 //will change the verification method depending on which game mode it is
                 //passes through which LED has been pressed and what frequency the program is supposed to play
                 digitalWrite(4, HIGH);
-                checkMode(i, mode, RED_LED);
+                checkMode(i, gameMode, RED_LED);
             }
             break;
         //green button
@@ -229,7 +280,7 @@ void playerInput(int mode)
                 //will change the verification method depending on which game mode it is
                 //passes through which LED has been pressed and what frequency the program is supposed to play
                 digitalWrite(5, HIGH);
-                checkMode(i, mode, GREEN_LED);
+                checkMode(i, gameMode, GREEN_LED);
             }  
             break;
 
@@ -240,6 +291,7 @@ void playerInput(int mode)
     //waits for every button to be released before continuing with the game
     do
     {
+        delay(50);
         //reads continuously the input of all of the buttons
         blueButton = digitalRead(A2);
         yellowButton = digitalRead(A3);
@@ -250,6 +302,8 @@ void playerInput(int mode)
 
     //resets the pins
     resetPinOutputState();
+    //will play a sound if the player got an input right and if the game is in game mode 2
+    verifyCorrectNote(gameMode);
 }
 
 //plays the second game mode
@@ -262,13 +316,13 @@ void secondGameMode()
     do
     {
         playerInput(2);
-        if (sequenceLength != 0)
+        if (freeSpace != 0)
         {
-            playerInputCountMode2 += 1;
+            playerInputCount += 1;
         }
         delay(200);
     }
-    while (sequenceLength < 5);
+    while (winConditionMode2 == 0);
     //the program goes back to the original loop once the win condition is achieved
     resetGame();
     //plays the winning jingle of the game
@@ -295,7 +349,7 @@ void firstGameMode()
         delay(200/speedMultiplyer);
         checkSpeedIncrease();
     }
-    while (freeSpace < 3);
+    while (freeSpace < 31);
     //the program goes back to the original loop once the win condition is achieved
     resetGame();
     //plays the winning jingle of the game
